@@ -145,12 +145,15 @@ export function FacebookPostCard({ post }: { post: FacebookPost }) {
 
       {/* ── 3. Prominent Photo Attachment ── */}
       {post.image_url ? (
-        <div className="relative w-full overflow-hidden bg-forest-deep max-h-[520px]">
+        <div className="relative w-full overflow-hidden bg-forest-deep/90">
           <img
             src={post.image_url}
             alt={post.title}
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
+            className="w-full h-auto max-h-[560px] object-cover transition-transform duration-500 hover:scale-[1.01]"
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = "/images/gallery.jpg";
+            }}
           />
         </div>
       ) : null}

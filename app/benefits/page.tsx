@@ -161,7 +161,7 @@ export default async function BenefitsPage() {
           "Cadets who complete the San Enrique ROTC Advanced Course receive preferential selection in Philippine Army, Air Force, and Navy Officer Candidate Courses (OCC), government civil service eligibility, AFP educational financial assistance, and official incorporation into the 6th Regional Community Defense Group (6RCDG) Reserve Force standby roster.\n\nGraduates also receive formal training certifications recognized during tri-bureau recruitment (PNP, BFP, BJMP).",
         category: "benefits",
         priority: "important",
-        image_url: "/images/parade.jpg",
+        image_url: "/images/benefits.jpg",
         created_at: new Date().toISOString(),
       },
     ];

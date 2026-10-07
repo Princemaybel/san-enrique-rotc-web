@@ -60,7 +60,7 @@ export default async function AnnouncementsPage({
         "Attention all San Enrique ROTC Cadets (MS11, MS12, MS21, MS22). The General Assembly and Command Drill Inspection will commence promptly this coming training Sunday at 0630H. Ensure complete Type A Fatigue Uniform with properly polished combat boots and regulation haircut.\n\nAttendance is mandatory and counts towards final commissioning grades. Cadets on medical waiver must report directly to the Battalion Medic with valid physician clearance.",
       category: "announcement",
       priority: "urgent" as const,
-      image_url: "/images/training.jpg",
+      image_url: "/gallery/1st-instruction/instruction-1.jpg",
       created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
     },
     {
@@ -70,7 +70,7 @@ export default async function AnnouncementsPage({
         "All Platoon Leaders and Company Executive Officers are directed to assemble at the DMST Headquarters this Friday at 1600H for the operational briefing on the forthcoming Regional Annual Administrative and Tactical Inspection (RAATI).\n\nPlatoon leaders must prepare physical rosters, rifle accountability logs, and tactical gear inspections ahead of time.",
       category: "announcement",
       priority: "important" as const,
-      image_url: "/images/hero-rotc.jpg",
+      image_url: "/images/announcements.jpg",
       created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
     },
   ];

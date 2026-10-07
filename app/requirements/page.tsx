@@ -189,7 +189,7 @@ export default async function RequirementsPage() {
           "Official requirements for joining San Enrique ROTC Unit this Academic Term:\n\n1. Valid Certificate of Registration (COR) from accredited partner colleges\n2. Two (2) copies 2x2 ID picture in white background with military haircut\n3. Medical Clearance signed by a licensed government or school physician\n4. Duly notarized Parent/Guardian Consent Form (for minors)\n\nSubmit physical copies directly to the ROTC Admin Office, or upload your scanned credentials through your cadet student portal.",
         category: "requirements",
         priority: "important",
-        image_url: "/images/cadets.jpg",
+        image_url: "/images/requiremets.jpg",
         created_at: new Date().toISOString(),
       },
     ];

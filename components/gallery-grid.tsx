@@ -153,14 +153,13 @@ export function GalleryGrid({
                 </div>
               </div>
 
-              {/* ── Messenger-Style Multi-Photo Collage Preview ── */}
-              {/* Compact fixed height collage with main on left and 2 stacked on right */}
+              {/* ── Messenger-Style Multi-Photo Collage or Full Single Photo ── */}
               <div
-                className="grid grid-cols-3 gap-1.5 bg-charcoal p-1.5 h-56 sm:h-64 md:h-72 cursor-pointer select-none"
+                className={`grid ${totalPhotos >= 2 ? "grid-cols-3" : "grid-cols-1"} gap-1.5 bg-charcoal p-1.5 h-56 sm:h-64 md:h-72 cursor-pointer select-none`}
                 onClick={() => openAlbum(album, 0)}
               >
-                {/* Large Main Feature (Left 2 cols) */}
-                <div className="group relative col-span-2 h-full overflow-hidden rounded-lg bg-forest-deep">
+                {/* Large Main Feature */}
+                <div className={`group relative ${totalPhotos >= 2 ? "col-span-2" : "col-span-1"} h-full overflow-hidden rounded-lg bg-forest-deep`}>
                   <img
                     src={photo1}
                     alt={album.title}
@@ -179,56 +178,58 @@ export function GalleryGrid({
                   </div>
                 </div>
 
-                {/* Right Column: 2 stacked thumbnails with "+N more" badge */}
-                <div className="grid grid-rows-2 gap-1.5 h-full">
-                  {/* Photo 2 */}
-                  {photo2 ? (
-                    <div
-                      className="group relative h-full overflow-hidden rounded-lg bg-forest-deep"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openAlbum(album, 1);
-                      }}
-                    >
-                      <img
-                        src={photo2}
-                        alt="Photo 2"
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-                    </div>
-                  ) : (
-                    <div className="h-full rounded-lg bg-forest-deep/50" />
-                  )}
-
-                  {/* Photo 3 with Messenger-style "+N more" overlay */}
-                  {photo3 ? (
-                    <div
-                      className="group relative h-full overflow-hidden rounded-lg bg-forest-deep"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openAlbum(album, 2);
-                      }}
-                    >
-                      <img
-                        src={photo3}
-                        alt="Photo 3"
-                        className="h-full w-full object-cover"
-                      />
-                      {/* Messenger Overlay */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 group-hover:bg-black/80 backdrop-blur-xs transition-all text-white p-1.5 text-center">
-                        <span className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
-                          +{remaining + 1}
-                        </span>
-                        <span className="text-3xs font-bold uppercase tracking-wider text-gold">
-                          See All
-                        </span>
+                {/* Right Column: 2 stacked thumbnails with "+N more" badge (only if 2+ photos) */}
+                {totalPhotos >= 2 && (
+                  <div className="grid grid-rows-2 gap-1.5 h-full">
+                    {/* Photo 2 */}
+                    {photo2 ? (
+                      <div
+                        className="group relative h-full overflow-hidden rounded-lg bg-forest-deep"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openAlbum(album, 1);
+                        }}
+                      >
+                        <img
+                          src={photo2}
+                          alt="Photo 2"
+                          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
                       </div>
-                    </div>
-                  ) : (
-                    <div className="h-full rounded-lg bg-forest-deep/50" />
-                  )}
-                </div>
+                    ) : (
+                      <div className="h-full rounded-lg bg-forest-deep/50" />
+                    )}
+
+                    {/* Photo 3 with Messenger-style "+N more" overlay */}
+                    {photo3 ? (
+                      <div
+                        className="group relative h-full overflow-hidden rounded-lg bg-forest-deep"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openAlbum(album, 2);
+                        }}
+                      >
+                        <img
+                          src={photo3}
+                          alt="Photo 3"
+                          className="h-full w-full object-cover"
+                        />
+                        {/* Messenger Overlay */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 group-hover:bg-black/80 backdrop-blur-xs transition-all text-white p-1.5 text-center">
+                          <span className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
+                            +{remaining + 1}
+                          </span>
+                          <span className="text-3xs font-bold uppercase tracking-wider text-gold">
+                            See All
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-full rounded-lg bg-forest-deep/50" />
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Bottom Quick Bar */}

@@ -150,7 +150,7 @@ export default async function AboutPage() {
           "San Enrique ROTC Unit operates under the operational command of the 604th Community Defense Center, 6th Regional Community Defense Group (6RCDG), Reserve Command, Philippine Army. Dedicated to fostering military leadership, patriotism, disaster response readiness, and civic action across Western Visayas.\n\nOur instructors and tactical non-commissioned officers maintain the highest standards of the Armed Forces of the Philippines.",
         category: "about",
         priority: "normal",
-        image_url: "/images/hero-rotc.jpg",
+        image_url: "/images/about.jpg",
         created_at: new Date().toISOString(),
       },
     ];
