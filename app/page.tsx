@@ -22,11 +22,42 @@ import { createOptionalPublicSupabaseClient } from "@/lib/supabase/public-server
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const highlights = [
-  ["Official Information", "Published ROTC information and public notices in one place.", ShieldCheck],
-  ["Secure Registration", "Website registration creates Supabase Auth and review records.", FileCheck2],
-  ["Centralized Records", "Cadet, application, attendance, event, and ID data stay connected.", ClipboardCheck],
-  ["Accessible Services", "Cadets use web and Android services after approval.", Smartphone],
+const communityDefenseCenters = [
+  {
+    title: "601st (Iloilo) Community Defense Center",
+    subtitle: "6RCDG • Reserve Command, Philippine Army",
+    logo: "/logo/601st (iloilo) community defense center.png",
+  },
+  {
+    title: "602nd (Iloilo) Community Defense Center",
+    subtitle: "6RCDG • Reserve Command, Philippine Army",
+    logo: "/logo/602nd (iloilo) community defense center.png",
+  },
+  {
+    title: "603rd (Iloilo) Community Defense Center",
+    subtitle: "6RCDG • Reserve Command, Philippine Army",
+    logo: "/logo/603rd (iloilo) community defense center.png",
+  },
+  {
+    title: "604th (Iloilo) Community Defense Center",
+    subtitle: "6RCDG • Reserve Command, Philippine Army",
+    logo: "/logo/604th (iloilo) community defense center.png",
+  },
+  {
+    title: "605th (Iloilo) Community Defense Center",
+    subtitle: "6RCDG • Reserve Command, Philippine Army",
+    logo: "/logo/605th (iloilo) community defense center.png",
+  },
+  {
+    title: "606th (Iloilo) Community Defense Center",
+    subtitle: "6RCDG • Reserve Command, Philippine Army",
+    logo: "/logo/606th (iloilo) community defense center.png",
+  },
+  {
+    title: "6th (Iloilo) Community Defense Center",
+    subtitle: "6RCDG • Regional Community Defense Group",
+    logo: "/logo/6th (iloilo) community defense center.png",
+  },
 ] as const;
 
 
@@ -279,8 +310,8 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ── Highlights Rolling Ticker Strip ──────────────────── */}
-        <section className="relative overflow-hidden border-y border-field/10 bg-white py-3.5 shadow-xs">
+        {/* ── Community Defense Centers Rolling Ticker Strip ──── */}
+        <section className="relative overflow-hidden border-y border-field/15 bg-white py-3.5 shadow-xs">
           {/* Subtle edge fades */}
           <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 md:w-28 bg-gradient-to-r from-white via-white/85 to-transparent z-10" />
           <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 md:w-28 bg-gradient-to-l from-white via-white/85 to-transparent z-10" />
@@ -289,17 +320,25 @@ export default async function HomePage() {
           <div className="animate-ticker-roll flex items-center gap-6 py-1">
             {[0, 1].map((half) => (
               <div key={half} className="flex items-center gap-6 shrink-0">
-                {[...highlights, ...highlights].map(([title, body, Icon], i) => (
+                {communityDefenseCenters.map((unit, i) => (
                   <div
                     key={`${half}-${i}`}
-                    className="group flex items-center gap-3.5 px-4 py-2.5 rounded-xl border border-field/10 bg-mist/40 hover:bg-white hover:border-gold/40 hover:shadow-card transition-all shrink-0 w-[290px] md:w-[320px] select-none cursor-default"
+                    className="group flex items-center gap-3.5 px-4 py-2.5 rounded-xl border border-field/15 bg-mist/40 hover:bg-white hover:border-gold/50 hover:shadow-card transition-all shrink-0 w-[330px] md:w-[360px] select-none cursor-default"
                   >
-                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white text-field border border-field/15 shadow-xs transition-colors group-hover:bg-field group-hover:text-gold">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    <div className="relative h-11 w-11 shrink-0 grid place-items-center rounded-lg bg-white p-1 border border-field/15 shadow-2xs group-hover:border-gold/40 transition-colors">
+                      <img
+                        src={unit.logo}
+                        alt={unit.title}
+                        className="h-full w-full object-contain drop-shadow-xs"
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h2 className="text-xs md:text-sm font-bold text-charcoal truncate">{title}</h2>
-                      <p className="mt-0.5 text-2xs md:text-xs leading-4 text-slate line-clamp-1">{body}</p>
+                      <h3 className="text-xs md:text-sm font-black text-charcoal truncate group-hover:text-field transition-colors">
+                        {unit.title}
+                      </h3>
+                      <p className="mt-0.5 text-3xs md:text-2xs font-mono font-medium text-slate truncate">
+                        {unit.subtitle}
+                      </p>
                     </div>
                   </div>
                 ))}
