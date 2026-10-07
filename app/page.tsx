@@ -18,6 +18,7 @@ import { HomeAlbumSlider } from "@/components/home-album-slider";
 import { OFFICIAL_ALBUMS, GalleryAlbum, GallerySlideItem } from "@/lib/gallery-data";
 import { announcements as demoAnnouncements, events as demoEvents } from "@/lib/content";
 import { createOptionalPublicSupabaseClient } from "@/lib/supabase/public-server";
+import { FacebookPostCard } from "@/components/facebook-post-card";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -85,21 +86,52 @@ async function getHomeAnnouncements() {
       .select("id,title,content,category,priority,created_at,image_url")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
-      .limit(4);
+      .limit(6);
 
     if (data && data.length > 0) {
       return data;
     }
   }
 
-  return demoAnnouncements.slice(0, 4).map((item, index) => ({
-    id: `demo-${index}`,
-    title: item.title,
-    content: item.body,
-    category: item.label,
-    created_at: new Date().toISOString(),
-    image_url: null,
-  }));
+  // High-fidelity Facebook-style default posts for unit announcements, requirements, benefits, gallery & about
+  return [
+    {
+      id: "fb-post-1",
+      title: "Muster Inspection & Formation Schedule for General Assembly",
+      content: "All enrolled San Enrique ROTC cadets are hereby directed to assemble at the University Grandstand this coming Saturday at 0630H sharp. Uniform of the Day (UOTD): Complete Type 'A' Fatigue Uniform with headgear and polished combat boots. Bring your personal digital QR Pass generated from the Cadet Portal or Mobile App for rapid scanner gate check-in.",
+      category: "announcement",
+      priority: "urgent" as const,
+      created_at: new Date().toISOString(),
+      image_url: "/images/announcements.jpg",
+    },
+    {
+      id: "fb-post-2",
+      title: "MS 41-42 Cadet Graduation & Field Training Exercises",
+      content: "Congratulations to the graduating class of Military Science 41-42! Our cadets successfully completed rigorous tactical defense maneuvers, basic marksmanship drills, disaster response simulations, and tactical squad leadership training.",
+      category: "gallery",
+      priority: "normal" as const,
+      created_at: new Date(Date.now() - 86400000).toISOString(),
+      image_url: "/images/gallery.jpg",
+    },
+    {
+      id: "fb-post-3",
+      title: "Updated Enlistment Requirements for Academic Year 2026-2027",
+      content: "Prospective cadets and incoming tertiary students: Registration is now open on the official web portal! Please ensure you have your Certificate of Registration (COR), medical clearance certificate, two 2x2 ID photos in white background, and a valid student ID ready for upload during the online application process.",
+      category: "requirements",
+      priority: "important" as const,
+      created_at: new Date(Date.now() - 172800000).toISOString(),
+      image_url: "/images/requiremets.jpg",
+    },
+    {
+      id: "fb-post-4",
+      title: "Cadet Academic Merits, Tuition Incentives & Service Privileges",
+      content: "Did you know that serving with the San Enrique ROTC unit entitles you to academic leadership credits, civil service examination exemptions upon commission, priority qualification for Armed Forces of the Philippines (AFP) scholarships, and emergency response certifications?",
+      category: "benefits",
+      priority: "normal" as const,
+      created_at: new Date(Date.now() - 259200000).toISOString(),
+      image_url: "/images/benefits.jpg",
+    },
+  ];
 }
 
 async function getHomeEvents() {
@@ -344,6 +376,54 @@ export default async function HomePage() {
                 ))}
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ── Official Command Feed & Dispatches (Facebook Style) ── */}
+        <section className="py-12 md:py-16 bg-cream">
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full border border-field/20 bg-field/10 px-3 py-1 text-3xs font-mono font-bold uppercase tracking-wider text-field mb-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  COMMAND POST • LIVE DISPATCHES
+                </span>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-charcoal tracking-tight">
+                  Unit Feed & Official Updates
+                </h2>
+                <p className="mt-1.5 text-xs sm:text-sm text-slate max-w-2xl leading-relaxed">
+                  Latest military bulletins, drill guidelines, enlistment requirements, and field activity photos published by San Enrique ROTC Command Headquarters.
+                </p>
+              </div>
+
+              <Link
+                href="/announcements"
+                className="inline-flex items-center gap-2 rounded-xl border border-field/20 bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-field shadow-sm hover:bg-field hover:text-white transition-all self-start md:self-auto shrink-0"
+              >
+                All Bulletins
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {/* Facebook Posts Grid */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+              {homeAnnouncements.map((post) => (
+                <FacebookPostCard
+                  key={post.id}
+                  post={{
+                    id: post.id,
+                    title: post.title,
+                    content: post.content,
+                    category: post.category,
+                    priority: post.priority as any,
+                    image_url: post.image_url,
+                    created_at: post.created_at,
+                    author: "San Enrique ROTC Unit Command",
+                    authorAvatar: "/logo.png",
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </section>
 

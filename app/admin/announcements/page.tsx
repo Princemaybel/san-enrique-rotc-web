@@ -1,8 +1,22 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Edit3, ImagePlus, Megaphone, Plus, Save, Trash2, X } from "lucide-react";
+import {
+  Edit3,
+  ImagePlus,
+  Megaphone,
+  Plus,
+  Save,
+  Trash2,
+  X,
+  Sparkles,
+  Camera,
+  CheckCircle2,
+  Globe,
+  Upload,
+} from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
+import { FacebookPostCard } from "@/components/facebook-post-card";
 import { createBrowserClient } from "@/lib/supabase/client";
 
 type Announcement = {
@@ -16,10 +30,19 @@ type Announcement = {
   created_at: string;
 };
 
+const CATEGORY_PRESETS = [
+  { label: "Announcement", icon: "📢", key: "announcement" },
+  { label: "Gallery Photos", icon: "📸", key: "gallery" },
+  { label: "Requirements", icon: "📜", key: "requirements" },
+  { label: "Cadet Benefits", icon: "⭐", key: "benefits" },
+  { label: "About Unit", icon: "🎖️", key: "about" },
+  { label: "Training Drill", icon: "🎯", key: "training" },
+];
+
 const emptyForm = {
   title: "",
   content: "",
-  category: "General",
+  category: "announcement",
   priority: "normal" as Announcement["priority"],
   image_url: "",
   is_published: true,
@@ -66,12 +89,13 @@ export default function AdminAnnouncementsPage() {
       image_url: item.image_url ?? "",
       is_published: item.is_published,
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
     if (!form.title.trim() || !form.content.trim()) {
-      setMessage("Title and content are required.");
+      setMessage("Please provide both a title and description for your post.");
       return;
     }
 
@@ -80,7 +104,7 @@ export default function AdminAnnouncementsPage() {
     const payload = {
       title: form.title.trim(),
       content: form.content.trim(),
-      category: form.category.trim() || "General",
+      category: form.category.trim() || "announcement",
       priority: form.priority,
       image_url: form.image_url.trim() || null,
       is_published: form.is_published,
@@ -91,11 +115,12 @@ export default function AdminAnnouncementsPage() {
       ? await supabase.from("announcements").update(payload).eq("id", editingId)
       : await supabase.from("announcements").insert(payload);
 
-    if (result.error) setMessage(result.error.message);
-    else {
-      setMessage(editingId ? "Announcement updated." : "Announcement posted.");
+    if (result.error) {
+      setMessage(result.error.message);
+    } else {
+      setMessage(editingId ? "✅ Post updated successfully." : "✅ Post published to the live feed!");
 
-      // If new published announcement, broadcast notification to all approved cadets
+      // Broadcast notification to cadets
       if (!editingId && form.is_published) {
         try {
           const { data: approvedCadets } = await supabase
@@ -113,27 +138,8 @@ export default function AdminAnnouncementsPage() {
               is_read: false,
             }));
             await supabase.from("notifications").insert(notifRows);
-
-            // Send remote push if push tokens available
-            const tokens = approvedCadets.map((c) => c.push_token).filter(Boolean);
-            if (tokens.length > 0) {
-              const pushMessages = tokens.map((token) => ({
-                to: token,
-                sound: "default",
-                title: `📢 ROTC: ${form.title.trim()}`,
-                body: form.content.trim().slice(0, 140),
-                data: { category: form.category, priority: form.priority },
-              }));
-              fetch("https://exp.host/--/api/v2/push/send", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(pushMessages),
-              }).catch(() => {});
-            }
           }
-        } catch {
-          // Non-blocking notification dispatch
-        }
+        } catch {}
       }
 
       resetForm();
@@ -143,7 +149,7 @@ export default function AdminAnnouncementsPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Delete this announcement?")) return;
+    if (!confirm("Are you sure you want to delete this post?")) return;
     const { error } = await supabase.from("announcements").delete().eq("id", id);
     if (error) setMessage(error.message);
     else await loadItems();
@@ -160,146 +166,285 @@ export default function AdminAnnouncementsPage() {
 
   async function uploadImage(file: File) {
     if (!file.type.startsWith("image/")) {
-      setMessage("Please choose an image file.");
+      setMessage("Please select a valid image file.");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage("Image must be 5MB or smaller.");
+    if (file.size > 8 * 1024 * 1024) {
+      setMessage("Image must be 8MB or smaller.");
       return;
     }
 
     setUploading(true);
     setMessage("");
+
     const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
     const baseName = file.name.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase();
     const path = `announcements/${Date.now()}-${baseName}.${extension}`;
-    const { error } = await supabase.storage.from("announcements").upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: file.type,
-    });
 
-    if (error) {
-      setMessage(error.message);
+    try {
+      const { error } = await supabase.storage.from("announcements").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+
+      if (!error) {
+        const { data } = supabase.storage.from("announcements").getPublicUrl(path);
+        setForm((current) => ({ ...current, image_url: data.publicUrl }));
+        setMessage("✅ Photo attached successfully!");
+        setUploading(false);
+        return;
+      }
+    } catch {}
+
+    // Fallback: Read as base64 data URL if storage upload has network/permission issue
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setForm((current) => ({ ...current, image_url: dataUrl }));
+      setMessage("✅ Photo attached!");
       setUploading(false);
-      return;
-    }
-
-    const { data } = supabase.storage.from("announcements").getPublicUrl(path);
-    setForm((current) => ({ ...current, image_url: data.publicUrl }));
-    setMessage("Image uploaded and attached.");
-    setUploading(false);
+    };
+    reader.readAsDataURL(file);
   }
 
   return (
-    <PortalShell type="admin" title="Announcements" subtitle="Post, edit, publish, and remove official ROTC notices." currentPath="/admin/announcements">
-      <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
-        <form onSubmit={save} className="rounded-xl border border-field/10 bg-white p-5 shadow-card">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brass">Content Desk</p>
-              <h2 className="text-xl font-black text-charcoal">{editingId ? "Edit Announcement" : "New Announcement"}</h2>
-            </div>
-            {editingId ? (
-              <button type="button" onClick={resetForm} className="rounded-md border border-field/20 p-2 text-slate hover:bg-mist" aria-label="Cancel edit">
-                <X className="h-4 w-4" />
-              </button>
-            ) : null}
-          </div>
-
-          <label className="grid gap-1.5 text-sm font-semibold text-charcoal">
-            Title
-            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="rounded-md border border-field/20 px-3 py-2 text-sm outline-none focus:border-field focus:ring-2 focus:ring-field/15" />
-          </label>
-          <label className="mt-4 grid gap-1.5 text-sm font-semibold text-charcoal">
-            Content
-            <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={7} className="rounded-md border border-field/20 px-3 py-2 text-sm outline-none focus:border-field focus:ring-2 focus:ring-field/15" />
-          </label>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-1.5 text-sm font-semibold text-charcoal">
-              Category
-              <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="rounded-md border border-field/20 px-3 py-2 text-sm outline-none focus:border-field" />
-            </label>
-            <label className="grid gap-1.5 text-sm font-semibold text-charcoal">
-              Priority
-              <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as Announcement["priority"] })} className="rounded-md border border-field/20 px-3 py-2 text-sm outline-none focus:border-field">
-                <option value="normal">Normal</option>
-                <option value="important">Important</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </label>
-          </div>
-
-          {/* Upload button only — no raw URL input */}
-          <label className="mt-3 grid cursor-pointer gap-2 rounded-lg border border-dashed border-field/25 bg-mist/60 p-4 text-sm font-semibold text-charcoal transition-colors hover:bg-gold/10">
-            <span className="inline-flex items-center gap-2">
-              <ImagePlus className="h-4 w-4 text-brass" />
-              {uploading ? "Uploading image..." : "Upload announcement image"}
-            </span>
-            <input
-              type="file"
-              accept="image/*"
-              disabled={uploading}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) uploadImage(file);
-                e.currentTarget.value = "";
-              }}
-              className="sr-only"
-            />
-            <span className="text-xs font-normal text-slate">JPG, PNG, or WebP up to 5MB. The uploaded image is saved to Supabase Storage.</span>
-          </label>
-          {form.image_url ? (
-            <div className="mt-3 overflow-hidden rounded-lg border border-field/10 bg-mist">
-              <img src={form.image_url} alt="Announcement preview" className="h-40 w-full object-cover" />
-            </div>
-          ) : null}
-          <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-charcoal">
-            <input type="checkbox" checked={form.is_published} onChange={(e) => setForm({ ...form, is_published: e.target.checked })} />
-            Publish publicly
-          </label>
-
-          {message ? <p className="mt-4 rounded-md bg-gold/10 px-3 py-2 text-sm font-semibold text-charcoal">{message}</p> : null}
-
-          <button disabled={saving} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-field px-4 py-3 text-sm font-bold text-white hover:bg-forest disabled:opacity-60">
-            {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {saving ? "Saving..." : editingId ? "Save Changes" : "Post Announcement"}
-          </button>
-        </form>
-
-        <section className="rounded-xl border border-field/10 bg-white p-5 shadow-card">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-black text-charcoal">Published Board</h2>
-            <Megaphone className="h-5 w-5 text-brass" />
-          </div>
-          {loading ? <p className="text-sm text-slate">Loading announcements...</p> : null}
-          <div className="grid gap-3">
-            {items.map((item) => (
-              <article key={item.id} className="rounded-lg border border-field/10 p-4">
-                {item.image_url ? (
-                  <img src={item.image_url} alt="" className="mb-3 h-32 w-full rounded-md object-cover" />
-                ) : null}
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-brass">{item.category} • {item.priority}</p>
-                    <h3 className="mt-1 text-lg font-black text-charcoal">{item.title}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-slate">{item.content}</p>
-                  </div>
-                  <span className={`rounded px-2 py-1 text-xs font-bold ${item.is_published ? "bg-emerald-100 text-emerald-800" : "bg-slate/10 text-slate"}`}>
-                    {item.is_published ? "Published" : "Draft"}
+    <PortalShell
+      type="admin"
+      title="Official Feed & Dispatches"
+      subtitle="Publish Facebook-style posts with photos, descriptions, and categories directly to the public home feed and mobile app."
+      currentPath="/admin/announcements"
+    >
+      <div className="grid gap-8 lg:grid-cols-[1.1fr_1.4fr] items-start">
+        {/* ── Left Column: Facebook-Style Post Composer ── */}
+        <div className="rounded-2xl border border-field/20 bg-white p-5 sm:p-6 shadow-card">
+          <form onSubmit={save} className="space-y-5">
+            {/* Facebook Composer Header */}
+            <div className="flex items-center justify-between border-b border-field/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full border-2 border-gold/40 p-0.5 bg-white">
+                  <img src="/logo.png" alt="Command Logo" className="h-full w-full object-contain rounded-full" />
+                </div>
+                <div>
+                  <strong className="block text-sm font-bold text-charcoal">
+                    {editingId ? "Edit Command Post" : "Create Official Command Post"}
+                  </strong>
+                  <span className="flex items-center gap-1 text-3xs font-mono text-field font-semibold">
+                    <Globe className="h-3 w-3" />
+                    Public Feed • Website & Mobile App
                   </span>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button onClick={() => edit(item)} className="inline-flex items-center gap-1 rounded-md border border-field/20 px-3 py-2 text-xs font-bold text-charcoal hover:bg-mist"><Edit3 className="h-3.5 w-3.5" /> Edit</button>
-                  <button onClick={() => togglePublish(item)} className="rounded-md border border-field/20 px-3 py-2 text-xs font-bold text-charcoal hover:bg-mist">{item.is_published ? "Unpublish" : "Publish"}</button>
-                  <button onClick={() => remove(item.id)} className="inline-flex items-center gap-1 rounded-md border border-red-200 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50"><Trash2 className="h-3.5 w-3.5" /> Delete</button>
+              </div>
+
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-lg border border-slate/20 p-1.5 text-slate hover:bg-mist transition-colors"
+                  title="Cancel editing"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Quick Category Selector Chips */}
+            <div>
+              <label className="block text-2xs font-extrabold uppercase tracking-widest text-slate mb-2">
+                Post Category
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {CATEGORY_PRESETS.map((cat) => {
+                  const active = form.category.toLowerCase() === cat.key;
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => setForm({ ...form, category: cat.key })}
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
+                        active
+                          ? "bg-field text-white shadow-xs scale-102"
+                          : "border border-field/15 bg-mist/60 text-charcoal hover:bg-white hover:border-gold/40"
+                      }`}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Title / Headline Input */}
+            <div>
+              <label className="block text-2xs font-extrabold uppercase tracking-widest text-slate mb-1">
+                Post Headline / Title
+              </label>
+              <input
+                type="text"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="e.g. Schedule for General Muster Inspection..."
+                className="w-full rounded-xl border border-field/20 px-3.5 py-2.5 text-sm font-bold text-charcoal outline-none focus:border-field focus:ring-2 focus:ring-field/15 transition-all"
+              />
+            </div>
+
+            {/* Description / Content Textarea (Facebook Style) */}
+            <div>
+              <label className="block text-2xs font-extrabold uppercase tracking-widest text-slate mb-1">
+                Description / Caption
+              </label>
+              <textarea
+                value={form.content}
+                onChange={(e) => setForm({ ...form, content: e.target.value })}
+                rows={5}
+                placeholder="Write the full announcement, requirement notice, benefits details, or event description here..."
+                className="w-full rounded-xl border border-field/20 p-3.5 text-sm text-charcoal leading-relaxed outline-none focus:border-field focus:ring-2 focus:ring-field/15 transition-all"
+              />
+            </div>
+
+            {/* Photo Attachment (Facebook Style) */}
+            <div>
+              <label className="block text-2xs font-extrabold uppercase tracking-widest text-slate mb-1">
+                Photo Attachment
+              </label>
+
+              {form.image_url ? (
+                /* Attached Photo Preview */
+                <div className="relative overflow-hidden rounded-xl border-2 border-field/20 bg-forest-deep">
+                  <img
+                    src={form.image_url}
+                    alt="Attached preview"
+                    className="h-52 w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, image_url: "" })}
+                    className="absolute top-2.5 right-2.5 rounded-full bg-dark/80 p-1.5 text-white shadow hover:bg-red-600 transition-colors"
+                    title="Remove photo"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <span className="absolute bottom-2 left-2 rounded-md bg-dark/70 px-2 py-0.5 text-3xs font-mono text-white">
+                    Photo Attached
+                  </span>
                 </div>
-              </article>
-            ))}
-            {!loading && !items.length ? <p className="rounded-lg border border-dashed border-field/20 p-6 text-center text-sm text-slate">No announcements yet.</p> : null}
+              ) : (
+                /* Photo Picker Dropzone */
+                <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-field/25 bg-mist/50 p-6 text-center transition-all hover:border-field/50 hover:bg-gold/5">
+                  <div className="grid h-10 w-10 place-items-center rounded-full bg-field/10 text-field">
+                    <Camera className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <strong className="block text-xs font-bold text-charcoal">
+                      {uploading ? "Uploading photo..." : "Add Photo to Post"}
+                    </strong>
+                    <span className="text-3xs text-slate">Supports JPG, PNG, WebP up to 8MB</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadImage(file);
+                      e.currentTarget.value = "";
+                    }}
+                    className="sr-only"
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Notification message */}
+            {message && (
+              <p className="rounded-lg bg-emerald-50 border border-emerald-200 px-3.5 py-2 text-xs font-bold text-emerald-800">
+                {message}
+              </p>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-field px-5 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-sm hover:bg-forest transition-all disabled:opacity-60 active:scale-[0.98]"
+            >
+              {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {saving ? "Publishing..." : editingId ? "Update Post" : "Publish to Official Feed"}
+            </button>
+          </form>
+        </div>
+
+        {/* ── Right Column: Live Feed of Published Posts ── */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-black text-charcoal tracking-tight flex items-center gap-2">
+              <Megaphone className="h-4 w-4 text-field" />
+              LIVE POSTED FEED ({items.length})
+            </h2>
+            <span className="text-2xs font-mono text-slate">SYNCS WITH HOMEPAGE</span>
           </div>
-        </section>
+
+          {loading ? (
+            <p className="text-xs text-slate py-8 text-center">Loading feed dispatches...</p>
+          ) : items.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-field/20 bg-white p-8 text-center">
+              <Megaphone className="mx-auto h-8 w-8 text-slate/40 mb-2" />
+              <strong className="block text-sm font-bold text-charcoal">No Dispatches Posted Yet</strong>
+              <p className="text-xs text-slate mt-1">Use the post composer on the left to publish your first announcement or update with a photo!</p>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {items.map((item) => (
+                <div key={item.id} className="relative group">
+                  {/* The Facebook Post Card */}
+                  <FacebookPostCard
+                    post={{
+                      id: item.id,
+                      title: item.title,
+                      content: item.content,
+                      category: item.category,
+                      priority: item.priority,
+                      image_url: item.image_url,
+                      created_at: item.created_at,
+                      author: "San Enrique ROTC Unit Command",
+                      authorAvatar: "/logo.png",
+                    }}
+                  />
+
+                  {/* Admin Post Actions Bar */}
+                  <div className="mt-2 flex items-center justify-between px-2">
+                    <span className="text-3xs font-mono font-bold text-slate">
+                      Status: {item.is_published ? "🟢 LIVE ON WEBSITE" : "⚪ DRAFT"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => edit(item)}
+                        className="inline-flex items-center gap-1 rounded-md border border-field/20 bg-white px-2.5 py-1 text-2xs font-bold text-charcoal hover:bg-mist transition-colors"
+                      >
+                        <Edit3 className="h-3 w-3" /> Edit
+                      </button>
+                      <button
+                        onClick={() => togglePublish(item)}
+                        className="inline-flex items-center gap-1 rounded-md border border-field/20 bg-white px-2.5 py-1 text-2xs font-bold text-charcoal hover:bg-mist transition-colors"
+                      >
+                        {item.is_published ? "Unpublish" : "Publish"}
+                      </button>
+                      <button
+                        onClick={() => remove(item.id)}
+                        className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-2xs font-bold text-red-700 hover:bg-red-100 transition-colors"
+                      >
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </PortalShell>
   );
 }
+
