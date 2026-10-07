@@ -241,37 +241,49 @@ export function PortalShell({
 
         {/* ── Main content ── */}
         <main className="min-w-0 overflow-hidden">
-          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-field/10 bg-white px-5 py-5 md:px-8">
-            <div className="flex items-center gap-3">
+          <header className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-4 border-b border-field/15 bg-white/95 px-5 py-4 backdrop-blur-md md:px-8 shadow-xs">
+            <div className="flex items-center gap-3.5">
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileOpen(true)}
-                className="grid h-9 w-9 place-items-center rounded-md border border-field/20 text-charcoal transition-colors hover:bg-mist lg:hidden"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-field/20 text-charcoal transition-colors hover:bg-mist lg:hidden"
                 aria-label="Open navigation menu"
               >
                 <Menu className="h-5 w-5" />
               </button>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brass">{portalLabel}</p>
-                <h1 className="mt-1 text-2xl font-bold text-charcoal md:text-3xl">{title}</h1>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <p className="text-2xs font-extrabold uppercase tracking-[0.2em] text-field">
+                    {portalLabel} • SECURE TERMINAL
+                  </p>
+                </div>
+                <h1 className="mt-0.5 text-xl font-black text-charcoal md:text-2xl tracking-tight">{title}</h1>
                 {subtitle && (
-                  <p className="mt-1 text-sm text-slate">{subtitle}</p>
+                  <p className="text-xs text-slate line-clamp-1">{subtitle}</p>
                 )}
               </div>
             </div>
 
-            {/* Admin Scanner Shortcut Pill */}
-            {type === "admin" && currentPath !== "/admin/qr-scanner" && (
-              <Link
-                href="/admin/qr-scanner"
-                className="inline-flex items-center gap-2 rounded-lg bg-field px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-forest active:scale-[0.98]"
-              >
-                <ScanLine className="h-4 w-4 text-brass" />
-                Launch Admin QR Scanner
-              </Link>
-            )}
+            {/* Quick Actions in Header */}
+            <div className="flex items-center gap-2.5">
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-3xs font-mono font-bold text-emerald-800">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                SYSTEM ONLINE
+              </span>
+
+              {type === "admin" && currentPath !== "/admin/qr-scanner" && (
+                <Link
+                  href="/admin/qr-scanner"
+                  className="inline-flex items-center gap-2 rounded-lg bg-field px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-forest hover:shadow active:scale-[0.98]"
+                >
+                  <ScanLine className="h-4 w-4 text-brass" />
+                  <span className="hidden sm:inline">Admin</span> QR Scanner
+                </Link>
+              )}
+            </div>
           </header>
-          <div className="px-5 py-6 md:px-8">{children}</div>
+          <div className="px-5 py-6 md:px-8 max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
     </div>

@@ -56,6 +56,22 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-cream">
+      {/* ── Top Military Ribbon ── */}
+      <div className="bg-charcoal text-white text-[11px] font-mono tracking-wider py-1.5 px-4 border-b border-field/20">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-bold text-gold">AFP RESERVE COMMAND</span>
+            <span className="hidden sm:inline text-white/40">•</span>
+            <span className="hidden sm:inline text-white/80">SAN ENRIQUE ROTC UNIT</span>
+          </div>
+          <div className="flex items-center gap-4 text-white/70 text-3xs sm:text-[11px]">
+            <span className="text-white/60">EST. SAN ENRIQUE, ILOILO</span>
+            <span className="text-gold font-bold">READY FORCE</span>
+          </div>
+        </div>
+      </div>
+
       {/* ── Header ── */}
       <header
         className={`sticky top-0 z-50 border-b transition-all duration-200 ${
@@ -64,7 +80,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             : "border-transparent bg-cream/90 backdrop-blur-sm"
         }`}
       >
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 py-1">
           {/* Logo */}
           <Link
             href="/"
@@ -82,7 +98,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
                 SAN ENRIQUE ROTC
               </span>
               <span className="hidden whitespace-nowrap text-[10px] font-bold uppercase tracking-widest text-field sm:block">
-                Cadet Services Portal
+                Cadet Services & Command Portal
               </span>
             </span>
           </Link>
@@ -263,12 +279,21 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
         <div className="border-t border-white/10">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
-            <p className="text-xs text-white/40">
-              &copy; 2026 San Enrique ROTC. All rights reserved.
-            </p>
-            <p className="text-xs text-white/30">
-              Powered by Supabase
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <p className="text-xs text-white/50">
+                &copy; 2026 San Enrique ROTC Unit. Citizen Armed Forces • Republic of the Philippines.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-3xs font-mono font-bold text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                DATABASE ONLINE • SECURE
+              </span>
+              <p className="text-xs text-white/40">
+                Powered by Supabase Cloud
+              </p>
+            </div>
           </div>
         </div>
       </footer>
