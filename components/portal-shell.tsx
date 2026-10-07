@@ -52,7 +52,7 @@ const adminGroups = [
       { label: "Events & Trainings", href: "/admin/events",      Icon: ClipboardList },
       { label: "Gallery",          href: "/admin/gallery",       Icon: GalleryHorizontal },
       { label: "PDF Modules",      href: "/admin/modules",       Icon: FileText },
-      { label: "Inquiries",        href: "/admin/messages",      Icon: Bell },
+      { label: "Inquiries",        href: "/admin/messages",      Icon: Bell },    
     ],
   },
   {

@@ -234,63 +234,83 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       {children}
 
       {/* ── Footer ── */}
-      <footer className="border-t border-field/15 bg-charcoal text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
-          {/* Brand column */}
-          <div>
-            <div className="flex items-center gap-3.5">
-              <span className="relative flex h-20 w-20 md:h-24 md:w-24 shrink-0 items-center justify-center">
-                <img src="/logo.png" alt="San Enrique ROTC" className="h-full w-full object-contain" />
-              </span>
-              <span className="font-black text-white text-lg md:text-xl tracking-wider">SAN ENRIQUE ROTC</span>
+      <footer className="border-t border-field/20 bg-charcoal text-white">
+        <div className="mx-auto max-w-7xl px-4 py-12 md:py-14">
+          <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-12">
+            {/* Brand column */}
+            <div className="sm:col-span-2 md:col-span-5">
+              <div className="flex items-center gap-3">
+                <span className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+                  <img src="/logo.png" alt="San Enrique ROTC" className="h-full w-full object-contain" />
+                </span>
+                <div>
+                  <span className="font-black text-white text-base md:text-lg tracking-wider block">
+                    SAN ENRIQUE ROTC
+                  </span>
+                  <span className="text-3xs font-mono font-bold tracking-widest uppercase text-gold">
+                    HQ • CADET COMMAND PORTAL
+                  </span>
+                </div>
+              </div>
+              <p className="mt-3.5 max-w-sm text-xs leading-relaxed text-white/60">
+                Official information, cadet registration, training updates, and digital cadet services — connected through one platform.
+              </p>
             </div>
-            <p className="mt-4 max-w-xs text-sm leading-6 text-white/55">
-              Official information, cadet registration, training updates, and digital cadet
-              services — connected through one platform.
-            </p>
-          </div>
 
-          <FooterColumn
-            title="Quick Links"
-            links={[
-              ["About", "/about"],
-              ["Benefits", "/benefits"],
-              ["Requirements", "/requirements"],
-              ["Contact", "/contact"],
-            ]}
-          />
-          <FooterColumn
-            title="Cadet Services"
-            links={[
-              ["Register", "/register"],
-              ["Application Status", "/status"],
-              ["Cadet Portal", "/cadet"],
-              ["Download App", "/download"],
-            ]}
-          />
-          <FooterColumn
-            title="Legal"
-            links={[
-              ["Privacy Policy", "/privacy"],
-              ["Terms of Use", "/terms"],
-            ]}
-          />
+            {/* Quick Links */}
+            <div className="md:col-span-2">
+              <FooterColumn
+                title="Quick Links"
+                links={[
+                  ["About Unit", "/about"],
+                  ["Benefits", "/benefits"],
+                  ["Requirements", "/requirements"],
+                  ["Contact HQ", "/contact"],
+                ]}
+              />
+            </div>
+
+            {/* Cadet Services */}
+            <div className="md:col-span-3">
+              <FooterColumn
+                title="Cadet Services"
+                links={[
+                  ["Online Enlistment", "/register"],
+                  ["Check Status", "/status"],
+                  ["Cadet Portal", "/cadet"],
+                  ["Mobile Android App", "/download"],
+                ]}
+              />
+            </div>
+
+            {/* Legal */}
+            <div className="md:col-span-2">
+              <FooterColumn
+                title="Legal & Policy"
+                links={[
+                  ["Privacy Policy", "/privacy"],
+                  ["Terms of Use", "/terms"],
+                ]}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="border-t border-white/10">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+        {/* Bottom copyright & operational status strip */}
+        <div className="border-t border-white/10 bg-dark/40">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              <p className="text-xs text-white/50">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <p className="text-3xs sm:text-xs text-white/50">
                 &copy; 2026 San Enrique ROTC Unit. Citizen Armed Forces • Republic of the Philippines.
               </p>
             </div>
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-3xs font-mono font-bold text-emerald-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 DATABASE ONLINE • SECURE
               </span>
-              <p className="text-xs text-white/40">
+              <p className="text-3xs sm:text-xs text-white/40 hidden sm:inline">
                 Powered by Supabase Cloud
               </p>
             </div>
@@ -310,13 +330,13 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brass">{title}</p>
-      <ul className="mt-4 grid gap-2.5">
+      <p className="text-2xs font-extrabold uppercase tracking-widest text-gold mb-3">{title}</p>
+      <ul className="space-y-2">
         {links.map(([label, href]) => (
           <li key={href}>
             <Link
               href={href}
-              className="text-sm text-white/55 transition-colors hover:text-white"
+              className="text-xs text-white/60 transition-colors hover:text-white"
             >
               {label}
             </Link>

@@ -595,23 +595,46 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ── CTA banner ───────────────────────────────────────── */}
-        <section className="bg-charcoal text-white">
-          <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-14 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-2xl font-bold md:text-3xl">Ready to begin your ROTC journey?</h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white/60">
-                Register online and access important cadet information and services through the San
-                Enrique ROTC platform.
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-3">
-              <ButtonLink href="/register" variant="light">
-                Register Now
-              </ButtonLink>
-              <ButtonLink href="/download" variant="light">
-                Download App
-              </ButtonLink>
+        {/* ── CTA banner (Elevated Card) ─────────────────────────── */}
+        <section className="bg-cream py-12 md:py-16">
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="relative overflow-hidden rounded-2xl border border-gold/35 bg-gradient-to-r from-forest-deep via-forest to-forest-dark px-6 py-10 sm:px-10 sm:py-12 text-white shadow-xl">
+              {/* Subtle Ambient Radial Glow */}
+              <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gold/15 blur-3xl" />
+              <div className="pointer-events-none absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-field/20 blur-3xl" />
+
+              <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-2xl">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white/10 px-3 py-1 text-3xs font-bold uppercase tracking-wider text-gold mb-3">
+                    <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
+                    Enlistment & Cadet Portal
+                  </div>
+                  <h2 className="text-2xl font-black md:text-3xl lg:text-4xl tracking-tight text-white">
+                    Ready to begin your ROTC journey?
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-white/75">
+                    Register online and access your personal digital QR pass, training documents, and command updates through the official San Enrique ROTC platform.
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 flex-wrap items-center gap-3">
+                  <ButtonLink
+                    href="/register"
+                    size="lg"
+                    className="shadow-lg shadow-black/20 hover:shadow-glow-field btn-press"
+                  >
+                    Register Now
+                  </ButtonLink>
+                  <ButtonLink
+                    href="/download"
+                    variant="secondary"
+                    size="lg"
+                    className="border-gold/40 hover:border-gold shadow-sm btn-press"
+                  >
+                    Download App
+                  </ButtonLink>
+                </div>
+              </div>
             </div>
           </div>
         </section>
