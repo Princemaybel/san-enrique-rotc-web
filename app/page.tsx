@@ -406,7 +406,7 @@ export default async function HomePage() {
             </div>
 
             {/* Facebook Posts Feed - Single Column Centered */}
-            <div className="mx-auto max-w-2xl space-y-6">
+            <div className="mx-auto max-w-3xl space-y-6">
               {homeAnnouncements.map((post) => (
                 <FacebookPostCard
                   key={post.id}

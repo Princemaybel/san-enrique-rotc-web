@@ -295,7 +295,7 @@ export default async function RequirementsPage() {
           </div>
 
           {/* 1 Single Column Centered Facebook Feed */}
-          <div className="mx-auto max-w-2xl space-y-6">
+          <div className="mx-auto max-w-3xl space-y-6">
             {requirementPosts.map((post) => (
               <FacebookPostCard
                 key={post.id}
