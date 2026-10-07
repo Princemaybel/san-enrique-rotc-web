@@ -14,10 +14,13 @@ import {
   CheckCircle2,
   Globe,
   Upload,
+  LogOut,
 } from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
 import { FacebookPostCard } from "@/components/facebook-post-card";
 import { createBrowserClient } from "@/lib/supabase/client";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { AdminLogin } from "@/components/admin-login";
 
 type Announcement = {
   id: string;
@@ -49,6 +52,7 @@ const emptyForm = {
 };
 
 export default function AdminAnnouncementsPage() {
+  const { isAdmin, isLoading, profile } = useAdminAuth();
   const supabase = useMemo(() => createBrowserClient(), []);
   const [items, setItems] = useState<Announcement[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -209,6 +213,18 @@ export default function AdminAnnouncementsPage() {
     reader.readAsDataURL(file);
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-mist">
+        <div className="text-field animate-pulse font-bold text-sm uppercase tracking-widest">Verifying Command Access...</div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <AdminLogin />;
+  }
+
   return (
     <PortalShell
       type="admin"
@@ -216,6 +232,25 @@ export default function AdminAnnouncementsPage() {
       subtitle="Publish Facebook-style posts with photos, descriptions, and categories directly to the public home feed and mobile app."
       currentPath="/admin/announcements"
     >
+      <div className="mb-6 flex items-center justify-between rounded-xl bg-forest-deep px-5 py-3 shadow-md border border-field/20">
+        <div className="flex items-center gap-3 text-gold">
+          <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-gold/40 bg-white">
+            <img src="/logo.png" alt="Admin" className="h-full w-full object-contain rounded-full" />
+          </div>
+          <div>
+            <div className="text-3xs font-bold uppercase tracking-widest text-mist/70">Command Authenticated</div>
+            <div className="text-sm font-black tracking-wide">{profile?.full_name || "Administrator"}</div>
+          </div>
+        </div>
+        <button 
+          onClick={() => supabase.auth.signOut()}
+          className="flex items-center gap-2 rounded-lg bg-red-500/10 px-3.5 py-2 text-xs font-bold text-red-400 border border-red-500/20 transition-all hover:bg-red-500/20 hover:text-red-300"
+        >
+          <LogOut className="h-4 w-4" />
+          Secure Sign Out
+        </button>
+      </div>
+
       <div className="grid gap-8 lg:grid-cols-[1.1fr_1.4fr] items-start">
         {/* ── Left Column: Facebook-Style Post Composer ── */}
         <div className="rounded-2xl border border-field/20 bg-white p-5 sm:p-6 shadow-card">
