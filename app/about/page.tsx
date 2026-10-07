@@ -16,6 +16,10 @@ import {
 import Link from "next/link";
 import { SiteShell } from "@/components/site-shell";
 import { InfoCard, PageHero, SectionHeading } from "@/components/ui";
+import { FacebookPostCard } from "@/components/facebook-post-card";
+import { createOptionalPublicSupabaseClient } from "@/lib/supabase/public-server";
+
+export const revalidate = 60;
 
 const values = [
   {
@@ -104,12 +108,59 @@ const pillars = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const supabase = createOptionalPublicSupabaseClient();
+  let aboutPosts: {
+    id: string;
+    title: string;
+    content: string;
+    category: string;
+    priority: "normal" | "important" | "urgent";
+    image_url?: string | null;
+    created_at: string;
+  }[] = [];
+
+  if (supabase) {
+    const { data } = await supabase
+      .from("announcements")
+      .select("id,title,content,category,priority,image_url,created_at")
+      .eq("is_published", true)
+      .eq("category", "about")
+      .order("created_at", { ascending: false });
+
+    if (data && data.length > 0) {
+      aboutPosts = data.map((item) => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        category: item.category,
+        priority: (item.priority as any) || "normal",
+        image_url: item.image_url ?? null,
+        created_at: item.created_at,
+      }));
+    }
+  }
+
+  if (aboutPosts.length === 0) {
+    aboutPosts = [
+      {
+        id: "about-fb-1",
+        title: "UNIT MISSION & JURISDICTION: 604th CDC / San Enrique ROTC",
+        content:
+          "San Enrique ROTC Unit operates under the operational command of the 604th Community Defense Center, 6th Regional Community Defense Group (6RCDG), Reserve Command, Philippine Army. Dedicated to fostering military leadership, patriotism, disaster response readiness, and civic action across Western Visayas.\n\nOur instructors and tactical non-commissioned officers maintain the highest standards of the Armed Forces of the Philippines.",
+        category: "about",
+        priority: "normal",
+        image_url: "/images/hero-rotc.jpg",
+        created_at: new Date().toISOString(),
+      },
+    ];
+  }
+
   return (
     <SiteShell>
       <PageHero
-image="/images/about.jpg"
-              eyebrow="Unit Lineage & Heritage"
+        image="/images/about.jpg"
+        eyebrow="Unit Lineage & Heritage"
         title="San Enrique ROTC Unit"
         body="Affiliated with the 604th Community Defense Center, 6RCDG, Reserve Command, Philippine Army. Forging disciplined collegiate leaders, resilient first responders, and patriotic guardians of the Republic."
       />
@@ -256,6 +307,42 @@ image="/images/about.jpg"
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* ── Official Unit Profile & Lineage Dispatches (1 Single Column) ── */}
+        <section className="space-y-6 pt-4">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="inline-flex items-center gap-2 rounded-full border border-field/20 bg-field/10 px-3 py-1 text-3xs font-mono font-bold uppercase tracking-wider text-field mb-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              UNIT PROFILE • OFFICIAL DISPATCHES
+            </span>
+            <h2 className="text-2xl md:text-3xl font-black text-charcoal tracking-tight">
+              Unit Heritage & Command Updates
+            </h2>
+            <p className="mt-1.5 text-xs sm:text-sm text-slate">
+              Dispatches on unit history, mission achievements, and leadership doctrine.
+            </p>
+          </div>
+
+          {/* 1 Single Column Centered Facebook Feed */}
+          <div className="mx-auto max-w-2xl space-y-6">
+            {aboutPosts.map((post) => (
+              <FacebookPostCard
+                key={post.id}
+                post={{
+                  id: post.id,
+                  title: post.title,
+                  content: post.content,
+                  category: "about",
+                  priority: post.priority,
+                  image_url: post.image_url,
+                  created_at: post.created_at,
+                  author: "San Enrique ROTC Unit Command",
+                  authorAvatar: "/logo.png",
+                }}
+              />
+            ))}
           </div>
         </section>
 

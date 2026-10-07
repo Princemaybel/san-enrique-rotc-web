@@ -12,6 +12,10 @@ import {
 import Link from "next/link";
 import { SiteShell } from "@/components/site-shell";
 import { PageHero, SectionHeading } from "@/components/ui";
+import { FacebookPostCard } from "@/components/facebook-post-card";
+import { createOptionalPublicSupabaseClient } from "@/lib/supabase/public-server";
+
+export const revalidate = 60;
 
 const eligibilityTiers = [
   {
@@ -143,12 +147,59 @@ const onboardingSteps = [
   },
 ];
 
-export default function RequirementsPage() {
+export default async function RequirementsPage() {
+  const supabase = createOptionalPublicSupabaseClient();
+  let requirementPosts: {
+    id: string;
+    title: string;
+    content: string;
+    category: string;
+    priority: "normal" | "important" | "urgent";
+    image_url?: string | null;
+    created_at: string;
+  }[] = [];
+
+  if (supabase) {
+    const { data } = await supabase
+      .from("announcements")
+      .select("id,title,content,category,priority,image_url,created_at")
+      .eq("is_published", true)
+      .eq("category", "requirements")
+      .order("created_at", { ascending: false });
+
+    if (data && data.length > 0) {
+      requirementPosts = data.map((item) => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        category: item.category,
+        priority: (item.priority as any) || "normal",
+        image_url: item.image_url ?? null,
+        created_at: item.created_at,
+      }));
+    }
+  }
+
+  if (requirementPosts.length === 0) {
+    requirementPosts = [
+      {
+        id: "req-fb-1",
+        title: "ENLISTMENT REQUIREMENTS & DOCUMENT SUBMISSION CHECKLIST",
+        content:
+          "Official requirements for joining San Enrique ROTC Unit this Academic Term:\n\n1. Valid Certificate of Registration (COR) from accredited partner colleges\n2. Two (2) copies 2x2 ID picture in white background with military haircut\n3. Medical Clearance signed by a licensed government or school physician\n4. Duly notarized Parent/Guardian Consent Form (for minors)\n\nSubmit physical copies directly to the ROTC Admin Office, or upload your scanned credentials through your cadet student portal.",
+        category: "requirements",
+        priority: "important",
+        image_url: "/images/cadets.jpg",
+        created_at: new Date().toISOString(),
+      },
+    ];
+  }
+
   return (
     <SiteShell>
       <PageHero
-image="/images/requiremets.jpg"
-              eyebrow="Cadet Onboarding & Regulations"
+        image="/images/requiremets.jpg"
+        eyebrow="Cadet Onboarding & Regulations"
         title="Enlistment Qualifications, Documents & Standards"
         body="Ensure you meet all eligibility criteria, prepare documentary requirements, and adhere to strict grooming and uniform regulations prior to drill muster."
       />
@@ -225,6 +276,42 @@ image="/images/requiremets.jpg"
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* ── Official Requirements Dispatches & Updates (1 Single Column) ── */}
+        <section className="space-y-6 pt-4">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="inline-flex items-center gap-2 rounded-full border border-field/20 bg-field/10 px-3 py-1 text-3xs font-mono font-bold uppercase tracking-wider text-field mb-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              REQUIREMENTS FEED • LIVE NOTICES
+            </span>
+            <h2 className="text-2xl md:text-3xl font-black text-charcoal tracking-tight">
+              Published Enlistment & Documentation Bulletins
+            </h2>
+            <p className="mt-1.5 text-xs sm:text-sm text-slate">
+              Checklists, medical waiver forms, and document deadline notices published by the Admin.
+            </p>
+          </div>
+
+          {/* 1 Single Column Centered Facebook Feed */}
+          <div className="mx-auto max-w-2xl space-y-6">
+            {requirementPosts.map((post) => (
+              <FacebookPostCard
+                key={post.id}
+                post={{
+                  id: post.id,
+                  title: post.title,
+                  content: post.content,
+                  category: "requirements",
+                  priority: post.priority,
+                  image_url: post.image_url,
+                  created_at: post.created_at,
+                  author: "San Enrique ROTC Unit Command",
+                  authorAvatar: "/logo.png",
+                }}
+              />
+            ))}
           </div>
         </section>
 

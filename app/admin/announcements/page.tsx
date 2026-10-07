@@ -31,12 +31,12 @@ type Announcement = {
 };
 
 const CATEGORY_PRESETS = [
-  { label: "Announcement", icon: "📢", key: "announcement" },
-  { label: "Gallery Photos", icon: "📸", key: "gallery" },
-  { label: "Requirements", icon: "📜", key: "requirements" },
-  { label: "Cadet Benefits", icon: "⭐", key: "benefits" },
-  { label: "About Unit", icon: "🎖️", key: "about" },
-  { label: "Training Drill", icon: "🎯", key: "training" },
+  { label: "Announcements Page", target: "/announcements + Home", icon: "📢", key: "announcement" },
+  { label: "Cadet Benefits Page", target: "/benefits + Home", icon: "⭐", key: "benefits" },
+  { label: "Requirements Page", target: "/requirements + Home", icon: "📜", key: "requirements" },
+  { label: "Unit Gallery Page", target: "/gallery + Home", icon: "📸", key: "gallery" },
+  { label: "About Unit Page", target: "/about + Home", icon: "🎖️", key: "about" },
+  { label: "Training Drill", target: "/announcements + Home", icon: "🎯", key: "training" },
 ];
 
 const emptyForm = {
@@ -57,6 +57,7 @@ export default function AdminAnnouncementsPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [adminFilter, setAdminFilter] = useState("all");
 
   async function loadItems() {
     setLoading(true);
@@ -248,12 +249,17 @@ export default function AdminAnnouncementsPage() {
               )}
             </div>
 
-            {/* Quick Category Selector Chips */}
+            {/* Deployment Destination & Category Selector */}
             <div>
-              <label className="block text-2xs font-extrabold uppercase tracking-widest text-slate mb-2">
-                Post Category
-              </label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-2xs font-extrabold uppercase tracking-widest text-slate">
+                  Select Deployment Target
+                </label>
+                <span className="text-3xs font-mono font-bold text-field bg-field/10 px-2 py-0.5 rounded">
+                  * Also deploys live on Home Feed
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {CATEGORY_PRESETS.map((cat) => {
                   const active = form.category.toLowerCase() === cat.key;
                   return (
@@ -261,14 +267,19 @@ export default function AdminAnnouncementsPage() {
                       key={cat.key}
                       type="button"
                       onClick={() => setForm({ ...form, category: cat.key })}
-                      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
+                      className={`flex flex-col items-start p-2.5 rounded-xl text-left transition-all ${
                         active
-                          ? "bg-field text-white shadow-xs scale-102"
+                          ? "bg-field text-white shadow-sm ring-2 ring-field/30 scale-101"
                           : "border border-field/15 bg-mist/60 text-charcoal hover:bg-white hover:border-gold/40"
                       }`}
                     >
-                      <span>{cat.icon}</span>
-                      <span>{cat.label}</span>
+                      <div className="flex items-center gap-1.5 font-bold text-xs">
+                        <span>{cat.icon}</span>
+                        <span>{cat.label}</span>
+                      </div>
+                      <span className={`mt-1 text-3xs font-mono truncate w-full ${active ? "text-gold-light font-semibold" : "text-slate"}`}>
+                        {cat.target}
+                      </span>
                     </button>
                   );
                 })}
@@ -376,13 +387,45 @@ export default function AdminAnnouncementsPage() {
         </div>
 
         {/* ── Right Column: Live Feed of Published Posts ── */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-black text-charcoal tracking-tight flex items-center gap-2">
               <Megaphone className="h-4 w-4 text-field" />
               LIVE POSTED FEED ({items.length})
             </h2>
             <span className="text-2xs font-mono text-slate">SYNCS WITH HOMEPAGE</span>
+          </div>
+
+          {/* Admin Category Filter Tabs */}
+          <div className="flex flex-wrap gap-1.5 pb-1">
+            <button
+              type="button"
+              onClick={() => setAdminFilter("all")}
+              className={`rounded-lg px-2.5 py-1 text-2xs font-bold transition-all ${
+                adminFilter === "all"
+                  ? "bg-field text-white shadow-xs"
+                  : "bg-white border border-field/15 text-charcoal hover:bg-mist"
+              }`}
+            >
+              All ({items.length})
+            </button>
+            {CATEGORY_PRESETS.map((cat) => {
+              const count = items.filter((it) => it.category.toLowerCase() === cat.key).length;
+              return (
+                <button
+                  key={cat.key}
+                  type="button"
+                  onClick={() => setAdminFilter(cat.key)}
+                  className={`rounded-lg px-2.5 py-1 text-2xs font-bold transition-all ${
+                    adminFilter === cat.key
+                      ? "bg-field text-white shadow-xs"
+                      : "bg-white border border-field/15 text-charcoal hover:bg-mist"
+                  }`}
+                >
+                  {cat.icon} {cat.label.replace(" Page", "")} ({count})
+                </button>
+              );
+            })}
           </div>
 
           {loading ? (
@@ -395,7 +438,11 @@ export default function AdminAnnouncementsPage() {
             </div>
           ) : (
             <div className="space-y-5">
-              {items.map((item) => (
+              {items
+                .filter((item) =>
+                  adminFilter === "all" ? true : item.category.toLowerCase() === adminFilter.toLowerCase()
+                )
+                .map((item) => (
                 <div key={item.id} className="relative group">
                   {/* The Facebook Post Card */}
                   <FacebookPostCard

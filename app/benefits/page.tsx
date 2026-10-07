@@ -16,6 +16,10 @@ import {
 import Link from "next/link";
 import { SiteShell } from "@/components/site-shell";
 import { PageHero, SectionHeading } from "@/components/ui";
+import { FacebookPostCard } from "@/components/facebook-post-card";
+import { createOptionalPublicSupabaseClient } from "@/lib/supabase/public-server";
+
+export const revalidate = 60;
 
 const coreBenefits = [
   {
@@ -115,12 +119,59 @@ const developmentalOutcomes = [
   },
 ];
 
-export default function BenefitsPage() {
+export default async function BenefitsPage() {
+  const supabase = createOptionalPublicSupabaseClient();
+  let benefitPosts: {
+    id: string;
+    title: string;
+    content: string;
+    category: string;
+    priority: "normal" | "important" | "urgent";
+    image_url?: string | null;
+    created_at: string;
+  }[] = [];
+
+  if (supabase) {
+    const { data } = await supabase
+      .from("announcements")
+      .select("id,title,content,category,priority,image_url,created_at")
+      .eq("is_published", true)
+      .eq("category", "benefits")
+      .order("created_at", { ascending: false });
+
+    if (data && data.length > 0) {
+      benefitPosts = data.map((item) => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        category: item.category,
+        priority: (item.priority as any) || "normal",
+        image_url: item.image_url ?? null,
+        created_at: item.created_at,
+      }));
+    }
+  }
+
+  if (benefitPosts.length === 0) {
+    benefitPosts = [
+      {
+        id: "benefit-fb-1",
+        title: "SCHOLARSHIP & CAREER PRIVILEGES: Benefits of Completing ROTC",
+        content:
+          "Cadets who complete the San Enrique ROTC Advanced Course receive preferential selection in Philippine Army, Air Force, and Navy Officer Candidate Courses (OCC), government civil service eligibility, AFP educational financial assistance, and official incorporation into the 6th Regional Community Defense Group (6RCDG) Reserve Force standby roster.\n\nGraduates also receive formal training certifications recognized during tri-bureau recruitment (PNP, BFP, BJMP).",
+        category: "benefits",
+        priority: "important",
+        image_url: "/images/parade.jpg",
+        created_at: new Date().toISOString(),
+      },
+    ];
+  }
+
   return (
     <SiteShell>
       <PageHero
-image="/images/benefits.jpg"
-              eyebrow="Cadet Advantages & Career Pathways"
+        image="/images/benefits.jpg"
+        eyebrow="Cadet Advantages & Career Pathways"
         title="Skills, Credentials & Horizons Beyond Formation"
         body="Enlisting in the San Enrique ROTC Unit provides prestigious academic credits, military reserve commissions, leadership mastery, and certified emergency response skills that distinguish you for life."
       />
@@ -170,6 +221,42 @@ image="/images/benefits.jpg"
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* ── Official Benefits Dispatches & Updates (1 Single Column) ── */}
+        <section className="space-y-6 pt-4">
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="inline-flex items-center gap-2 rounded-full border border-field/20 bg-field/10 px-3 py-1 text-3xs font-mono font-bold uppercase tracking-wider text-field mb-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              BENEFITS FEED • OFFICIAL UPDATES
+            </span>
+            <h2 className="text-2xl md:text-3xl font-black text-charcoal tracking-tight">
+              Published Cadet Benefits & Privilege Bulletins
+            </h2>
+            <p className="mt-1.5 text-xs sm:text-sm text-slate">
+              Recent official notices regarding educational subsidies, allowances, and commissioning pathways.
+            </p>
+          </div>
+
+          {/* 1 Single Column Centered Facebook Feed */}
+          <div className="mx-auto max-w-2xl space-y-6">
+            {benefitPosts.map((post) => (
+              <FacebookPostCard
+                key={post.id}
+                post={{
+                  id: post.id,
+                  title: post.title,
+                  content: post.content,
+                  category: "benefits",
+                  priority: post.priority,
+                  image_url: post.image_url,
+                  created_at: post.created_at,
+                  author: "San Enrique ROTC Unit Command",
+                  authorAvatar: "/logo.png",
+                }}
+              />
+            ))}
           </div>
         </section>
 
