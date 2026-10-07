@@ -110,7 +110,7 @@ export default async function AnnouncementsPage({
 
         {/* Announcements Feed - 1 Single Centered Column */}
         {items.length ? (
-          <div className="mx-auto max-w-3xl space-y-6">
+          <div className="w-full space-y-6">
             {items.map((item) => (
               <FacebookPostCard
                 key={item.id}

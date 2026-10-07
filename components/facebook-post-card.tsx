@@ -71,7 +71,7 @@ export function FacebookPostCard({ post }: { post: FacebookPost }) {
       });
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-field/15 bg-white shadow-card hover:shadow-card-hover transition-all">
+    <article className="overflow-hidden rounded-xl border border-field/15 bg-white shadow-card hover:shadow-card-hover transition-all">
       {/* ── 1. Facebook-Style Post Header ── */}
       <div className="flex items-start justify-between p-4 sm:p-5">
         <div className="flex items-center gap-3">
