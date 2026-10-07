@@ -145,7 +145,7 @@ export function FacebookPostCard({ post }: { post: FacebookPost }) {
 
       {/* ── 3. Prominent Photo Attachment ── */}
       {post.image_url ? (
-        <div className="relative w-full h-[420px] overflow-hidden bg-forest-deep/90">
+        <div className="relative w-full h-[520px] overflow-hidden bg-forest-deep/90">
           <img
             src={post.image_url}
             alt={post.title}
