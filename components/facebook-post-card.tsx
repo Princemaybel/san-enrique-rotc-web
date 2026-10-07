@@ -144,19 +144,32 @@ export function FacebookPostCard({ post }: { post: FacebookPost }) {
       </div>
 
       {/* ── 3. Prominent Photo Attachment ── */}
-      {post.image_url ? (
-        <div className="relative w-full h-[520px] overflow-hidden bg-forest-deep/90">
-          <img
-            src={post.image_url}
-            alt={post.title}
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.src = "/images/gallery.jpg";
-            }}
-          />
-        </div>
-      ) : null}
+      {(() => {
+        const categoryDefaultImages: Record<string, string> = {
+          training: "/images/home.jpg",
+          announcement: "/images/announcements.jpg",
+          gallery: "/images/gallery.jpg",
+          requirements: "/images/requiremets.jpg",
+          benefits: "/images/benefits.jpg",
+          about: "/images/about.jpg",
+          general: "/images/home.jpg",
+        };
+        const displayImage = post.image_url || categoryDefaultImages[normalizedCategory] || "/images/home.jpg";
+
+        return (
+          <div className="relative w-full h-[520px] overflow-hidden bg-forest-deep/90">
+            <img
+              src={displayImage}
+              alt={post.title}
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = "/images/gallery.jpg";
+              }}
+            />
+          </div>
+        );
+      })()}
 
       {/* ── 4. Reactions & Interaction Metrics Bar ── */}
       <div className="flex items-center justify-between px-4 py-2.5 text-3xs sm:text-2xs text-slate border-b border-field/10">
